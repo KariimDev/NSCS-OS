@@ -1,5 +1,5 @@
 // State
-let currentMode = 'flashcards';
+let currentMode = 'quiz';
 let flashcardIndex = 0;
 let shuffledData = []; // New array for shuffled cards
 let quizScore = 0;
@@ -9,6 +9,7 @@ let questionsAnswered = 0; // how many questions have been answered
 let quizFinished = false;
 let currentQuestion = null;
 let isQuizAnswered = false;
+let quizQuestions = []; // New state for quiz questions
 
 // DOM Elements
 const flashcardSection = document.getElementById('flashcard-section');
@@ -34,6 +35,12 @@ const feedbackText = document.getElementById('feedback-text');
 document.addEventListener('DOMContentLoaded', () => {
     shuffledData = [...commandData]; // Initialize with original order
     renderFlashcard();
+
+    // Initialize quiz questions if available
+    if (typeof quizData !== 'undefined') {
+        resetQuiz();
+        nextQuestion();
+    }
 });
 
 // Mode Switching
@@ -67,6 +74,48 @@ function resetQuiz() {
     quizFeedback.classList.add('hidden');
     const nextBtn = document.querySelector('.next-question-btn');
     if (nextBtn) nextBtn.textContent = 'Next Question';
+
+    // Select new random questions with difficulty progression
+    if (typeof quizData !== 'undefined') {
+        const allQuestions = [...quizData.questions];
+
+        // Group by difficulty
+        const easy = allQuestions.filter(q => q.difficulty_level === 'Easy');
+        const medium = allQuestions.filter(q => q.difficulty_level === 'Medium');
+        const hard = allQuestions.filter(q => q.difficulty_level === 'Hard');
+
+        // Shuffle each group
+        shuffleArray(easy);
+        shuffleArray(medium);
+        shuffleArray(hard);
+
+        // Select a mix: e.g., 3 Easy, 4 Medium, 3 Hard (or as available)
+        // Adjust numbers based on availability
+        const selectedEasy = easy.slice(0, 3);
+        const selectedMedium = medium.slice(0, 4);
+        const selectedHard = hard.slice(0, 3);
+
+        // If we don't have enough, fill up from others? 
+        // For simplicity, let's just concatenate what we have and maybe fill the rest if needed.
+        // But given the file size, we likely have enough.
+
+        // Create progression: Easy -> Medium -> Hard
+        let progression = [...selectedEasy, ...selectedMedium, ...selectedHard];
+
+        // If we still need more to reach quizTotal (10), fill with remaining mixed
+        if (progression.length < quizTotal) {
+            const usedIds = new Set(progression.map(q => q.question));
+            const remaining = allQuestions.filter(q => !usedIds.has(q.question));
+            shuffleArray(remaining);
+            progression = [...progression, ...remaining.slice(0, quizTotal - progression.length)];
+        }
+
+        // Sort by difficulty level value for consistent progression
+        const difficultyValue = { 'Easy': 1, 'Medium': 2, 'Hard': 3 };
+        progression.sort((a, b) => difficultyValue[a.difficulty_level] - difficultyValue[b.difficulty_level]);
+
+        quizQuestions = progression.slice(0, quizTotal);
+    }
 }
 
 
@@ -99,6 +148,13 @@ function nextQuestion() {
     // If quiz finished and user clicks next (Restart), reset and start over
     if (quizFinished) {
         resetQuiz();
+        // Need to call nextQuestion again to show the first question of the new set
+        // But resetQuiz doesn't call nextQuestion anymore, so we do it here?
+        // Wait, switchMode calls resetQuiz then nextQuestion.
+        // If we are here, it means user clicked "Restart Quiz".
+        // So we should proceed to show the first question.
+        // Let's just let the flow continue.
+        // ResetQuiz sets quizAsked to 0.
     }
 
     // If we've already presented the total number of questions, show final summary
@@ -116,48 +172,43 @@ function nextQuestion() {
     quizFeedback.classList.add('hidden');
     optionsGrid.innerHTML = ''; // Clear previous options
 
-    // Increment question counter (we're about to show the next one)
+    // Get current question
+    if (quizQuestions.length === 0) {
+        // Fallback if no questions loaded
+        questionText.textContent = "Error: No questions available.";
+        return;
+    }
+
+    currentQuestion = quizQuestions[quizAsked];
+
+    // Increment question counter
     quizAsked++;
 
-    // Pick a random correct item
-    const correctIndex = Math.floor(Math.random() * commandData.length);
-    const correctItem = commandData[correctIndex];
+    // Render question
+    // Render question
+    const difficultyColor = {
+        'Easy': '#2ecc71',
+        'Medium': '#f1c40f',
+        'Hard': '#e74c3c'
+    };
+    const difficultyHtml = `<span style="
+        display: inline-block;
+        font-size: 0.8rem;
+        padding: 2px 8px;
+        border-radius: 12px;
+        background-color: ${difficultyColor[currentQuestion.difficulty_level] || '#ccc'};
+        color: white;
+        margin-bottom: 8px;
+    ">${currentQuestion.difficulty_level}</span>`;
 
-    // Randomize Question Type
-    const questionType = Math.random() > 0.5 ? 'desc-to-cmd' : 'cmd-to-desc';
-
-    // Build a descriptive question plus a prompt value
-    if (questionType === 'desc-to-cmd') {
-        currentQuestion = {
-            text: `Question ${quizAsked} of ${quizTotal}: Which command matches the following description?`,
-            prompt: correctItem.description,
-            correctAnswer: correctItem.command
-        };
-    } else {
-        currentQuestion = {
-            text: `Question ${quizAsked} of ${quizTotal}: What does the following command do?`,
-            prompt: correctItem.command,
-            correctAnswer: correctItem.description
-        };
-    }
-
-    // Generate Distractors
-    const options = [currentQuestion.correctAnswer];
-    while (options.length < 4) {
-        const randomIdx = Math.floor(Math.random() * commandData.length);
-        const randomItem = commandData[randomIdx];
-
-        const randomOption = (questionType === 'desc-to-cmd') ? randomItem.command : randomItem.description;
-        if (!options.includes(randomOption)) options.push(randomOption);
-    }
-
-    // Shuffle Options
-    shuffleArray(options);
-
-    // Render question and populate prompt element
-    questionText.textContent = currentQuestion.text;
+    questionText.innerHTML = `${difficultyHtml}<br>Question ${quizAsked} of ${quizTotal}: ${currentQuestion.question}`;
     const promptEl = document.getElementById('question-prompt');
-    if (promptEl) promptEl.textContent = currentQuestion.prompt;
+    if (promptEl) promptEl.textContent = ""; // Clear prompt as it's in the question text now
+
+    // Options
+    const options = [...currentQuestion.options];
+    // Shuffle options for better experience
+    shuffleArray(options);
 
     options.forEach(option => {
         const btn = document.createElement('button');
@@ -172,22 +223,22 @@ function checkAnswer(selectedOption, btnElement) {
     if (isQuizAnswered) return;
     isQuizAnswered = true;
 
-    const isCorrect = selectedOption === currentQuestion.correctAnswer;
+    const isCorrect = selectedOption === currentQuestion.right_option;
 
     if (isCorrect) {
         btnElement.classList.add('correct');
         quizScore++;
-        feedbackText.textContent = "Correct! 🎉";
+        feedbackText.innerHTML = `Correct! 🎉<br><br>${currentQuestion.explanation}`;
         feedbackText.style.color = "var(--success-color)";
     } else {
         btnElement.classList.add('incorrect');
-        feedbackText.textContent = `Wrong! The correct answer was: ${currentQuestion.correctAnswer}`;
+        feedbackText.innerHTML = `Wrong! The correct answer was: <strong>${currentQuestion.right_option}</strong>.<br><br>${currentQuestion.explanation}`;
         feedbackText.style.color = "var(--error-color)";
 
         // Highlight the correct answer
         const buttons = optionsGrid.querySelectorAll('.option-btn');
         buttons.forEach(b => {
-            if (b.textContent === currentQuestion.correctAnswer) {
+            if (b.textContent === currentQuestion.right_option) {
                 b.classList.add('correct');
             }
         });
@@ -203,7 +254,9 @@ function checkAnswer(selectedOption, btnElement) {
     progressFill.style.width = `${progress}%`;
     // If we've answered all questions, show final message on nextQuestion call
     if (questionsAnswered >= quizTotal) {
-        quizAsked = quizTotal; // ensure nextQuestion shows final summary
+        // quizAsked is already incremented when showing the question.
+        // So if questionsAnswered == quizTotal, we are done.
+        // Next click on "Next Question" will trigger the completion screen.
     }
 }
 

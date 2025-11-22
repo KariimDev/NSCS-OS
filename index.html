@@ -16,15 +16,14 @@
         <header>
             <h1>Linux Command Mastery</h1>
             <nav>
-                <button id="tab-flashcards" class="tab-btn active"
-                    onclick="switchMode('flashcards')">Flashcards</button>
-                <button id="tab-quiz" class="tab-btn" onclick="switchMode('quiz')">Quiz</button>
+                <button id="tab-flashcards" class="tab-btn" onclick="switchMode('flashcards')">Flashcards</button>
+                <button id="tab-quiz" class="tab-btn active" onclick="switchMode('quiz')">Quiz</button>
             </nav>
         </header>
 
         <main id="main-content">
             <!-- Flashcard Section -->
-            <section id="flashcard-section" class="active-section">
+            <section id="flashcard-section">
                 <div class="flashcard-container">
                     <div class="flashcard" id="flashcard" onclick="flipCard()">
                         <div class="card-face card-front">
@@ -68,7 +67,7 @@
             </section>
 
             <!-- Quiz Section -->
-            <section id="quiz-section">
+            <section id="quiz-section" class="active-section">
                 <div class="quiz-container">
                     <div class="quiz-header">
                         <div class="score-board">Score: <span id="score">0</span></div>
@@ -77,7 +76,7 @@
                         </div>
                     </div>
                     <div class="question-card">
-                        <h2 id="question-text" aria-live="polite">What command prints all system information?</h2>
+                        <h2 id="question-text" aria-live="polite">Loading question...</h2>
                         <p id="question-prompt" class="question-prompt" aria-live="polite"></p>
                         <div class="options-grid" id="options-grid">
                             <!-- Options will be injected here -->
@@ -97,6 +96,7 @@
     </div>
 
     <script src="data.js"></script>
+    <script src="quiz_data.js"></script>
     <script src="script.js"></script>
 </body>
 
