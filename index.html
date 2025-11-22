@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Linux Command Mastery</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div class="app-container">
+        <header>
+            <h1>Linux Command Mastery</h1>
+            <nav>
+                <button id="tab-flashcards" class="tab-btn active"
+                    onclick="switchMode('flashcards')">Flashcards</button>
+                <button id="tab-quiz" class="tab-btn" onclick="switchMode('quiz')">Quiz</button>
+            </nav>
+        </header>
+
+        <main id="main-content">
+            <!-- Flashcard Section -->
+            <section id="flashcard-section" class="active-section">
+                <div class="flashcard-container">
+                    <div class="flashcard" id="flashcard" onclick="flipCard()">
+                        <div class="card-face card-front">
+                            <div class="card-content">
+                                <h2 id="card-command">uname</h2>
+                                <p class="hint">Click to flip</p>
+                            </div>
+                        </div>
+                        <div class="card-face card-back">
+                            <div class="card-content">
+                                <p id="card-description">Print system information</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="controls">
+                    <button class="control-btn" onclick="prevCard()" title="Previous">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M15 18l-6-6 6-6" />
+                        </svg>
+                    </button>
+                    <button class="control-btn" onclick="shuffleCards()" title="Shuffle">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="16 3 21 3 21 8"></polyline>
+                            <line x1="4" y1="20" x2="21" y2="3"></line>
+                            <polyline points="21 16 21 21 16 21"></polyline>
+                            <line x1="15" y1="15" x2="21" y2="21"></line>
+                            <line x1="4" y1="4" x2="9" y2="9"></line>
+                        </svg>
+                    </button>
+                    <span id="card-counter">1 / 10</span>
+                    <button class="control-btn" onclick="nextCard()" title="Next">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M9 18l6-6-6-6" />
+                        </svg>
+                    </button>
+                </div>
+            </section>
+
+            <!-- Quiz Section -->
+            <section id="quiz-section">
+                <div class="quiz-container">
+                    <div class="quiz-header">
+                        <div class="score-board">Score: <span id="score">0</span></div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="progress-fill"></div>
+                        </div>
+                    </div>
+                    <div class="question-card">
+                        <h2 id="question-text" aria-live="polite">What command prints all system information?</h2>
+                        <p id="question-prompt" class="question-prompt" aria-live="polite"></p>
+                        <div class="options-grid" id="options-grid">
+                            <!-- Options will be injected here -->
+                        </div>
+                    </div>
+                    <div id="quiz-feedback" class="quiz-feedback hidden">
+                        <p id="feedback-text"></p>
+                        <button class="next-question-btn" onclick="nextQuestion()">Next Question</button>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <p>Master Linux Commands &copy; 2025</p>
+        </footer>
+    </div>
+
+    <script src="data.js"></script>
+    <script src="script.js"></script>
+</body>
+
+</html>
