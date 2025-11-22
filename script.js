@@ -218,6 +218,12 @@ function nextQuestion() {
         btn.onclick = () => checkAnswer(option, btn);
         optionsGrid.appendChild(btn);
     });
+
+    // Scroll back to question
+    const questionCard = document.querySelector('.question-card');
+    if (questionCard) {
+        questionCard.scrollIntoView({ behavior: 'smooth' });
+    }
 }
 
 function checkAnswer(selectedOption, btnElement) {
@@ -247,6 +253,7 @@ function checkAnswer(selectedOption, btnElement) {
 
     scoreElement.textContent = quizScore;
     quizFeedback.classList.remove('hidden');
+    quizFeedback.scrollIntoView({ behavior: 'smooth', block: 'center' });
 
     // Update answered count and progress bar
     questionsAnswered++;
