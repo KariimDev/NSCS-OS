@@ -10,6 +10,7 @@ let quizFinished = false;
 let currentQuestion = null;
 let isQuizAnswered = false;
 let quizQuestions = []; // New state for quiz questions
+let currentTheme = 'modern'; // 'classic' or 'modern'
 
 // DOM Elements
 const flashcardSection = document.getElementById('flashcard-section');
@@ -162,7 +163,7 @@ function nextQuestion() {
         quizFinished = true;
         quizFeedback.classList.remove('hidden');
         feedbackText.textContent = `Quiz complete! Your score: ${quizScore} / ${quizTotal}`;
-        feedbackText.style.color = "var(--accent-color)";
+        feedbackText.style.color = currentTheme === 'classic' ? '#000' : 'var(--accent-color)';
         const nextBtn = document.querySelector('.next-question-btn');
         if (nextBtn) nextBtn.textContent = 'Restart Quiz';
         return;
@@ -228,12 +229,12 @@ function checkAnswer(selectedOption, btnElement) {
     if (isCorrect) {
         btnElement.classList.add('correct');
         quizScore++;
-        feedbackText.innerHTML = `Correct! 🎉<br><br>${currentQuestion.explanation}`;
-        feedbackText.style.color = "var(--success-color)";
+        feedbackText.innerHTML = `<span style="font-size: 2rem;">🎉</span><br>Correct!<br><br>${currentQuestion.explanation}`;
+        feedbackText.style.color = currentTheme === 'classic' ? '#000' : 'var(--success-color)';
     } else {
         btnElement.classList.add('incorrect');
-        feedbackText.innerHTML = `Wrong! The correct answer was: <strong>${currentQuestion.right_option}</strong>.<br><br>${currentQuestion.explanation}`;
-        feedbackText.style.color = "var(--error-color)";
+        feedbackText.innerHTML = `<span style="font-size: 2rem;">❌</span><br>Wrong!<br>The correct answer was: <strong>${currentQuestion.right_option}</strong>.<br><br>${currentQuestion.explanation}`;
+        feedbackText.style.color = currentTheme === 'classic' ? '#000' : 'var(--error-color)';
 
         // Highlight the correct answer
         const buttons = optionsGrid.querySelectorAll('.option-btn');
@@ -252,11 +253,36 @@ function checkAnswer(selectedOption, btnElement) {
     scoreElement.textContent = `${quizScore} / ${quizTotal}`;
     const progress = Math.round((questionsAnswered / quizTotal) * 100);
     progressFill.style.width = `${progress}%`;
-    // If we've answered all questions, show final message on nextQuestion call
-    if (questionsAnswered >= quizTotal) {
-        // quizAsked is already incremented when showing the question.
-        // So if questionsAnswered == quizTotal, we are done.
-        // Next click on "Next Question" will trigger the completion screen.
+
+    // Change next button text temporarily
+    const nextBtn = document.querySelector('.next-question-btn');
+    if (nextBtn) {
+        nextBtn.textContent = isCorrect ? "Great! Next Question" : "Got it, Next Question";
+        if (currentTheme === 'classic') {
+            nextBtn.style.backgroundColor = isCorrect ? 'var(--accent-color)' : 'var(--secondary-color)';
+            nextBtn.style.color = isCorrect ? '#000' : '#fff';
+        }
+    }
+}
+
+function toggleTheme() {
+    const themeLink = document.getElementById('theme-style');
+    const metaThemeColor = document.getElementById('meta-theme-color');
+
+    if (currentTheme === 'classic') {
+        currentTheme = 'modern';
+        themeLink.href = 'style-modern.css';
+        if (metaThemeColor) metaThemeColor.content = "#0f172a";
+    } else {
+        currentTheme = 'classic';
+        themeLink.href = 'style-classic.css';
+        if (metaThemeColor) metaThemeColor.content = "#fffef9";
+    }
+    // Reset button styles if in quiz
+    const nextBtn = document.querySelector('.next-question-btn');
+    if (nextBtn) {
+        nextBtn.style.backgroundColor = '';
+        nextBtn.style.color = '';
     }
 }
 
